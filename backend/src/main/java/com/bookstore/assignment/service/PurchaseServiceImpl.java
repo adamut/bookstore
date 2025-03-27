@@ -118,13 +118,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         return Try.of(() -> purchaseContext.getRequest().getBooks().stream()
                         .map(item -> buildOrderItem(purchaseContext, item))
                         .toList())
-                .flatMap(orderItems -> Try.of(() -> orderItemRepository.saveAll(orderItems))
-                        .onFailure(exception -> log.error("Unable to save orderItems={}", orderItems, exception))
-                        .onSuccess(result -> log.debug("Successfully saved orderItems={}", orderItems)))
+                .flatMap(orderItems -> Try.of(() -> orderItemRepository.saveAll(orderItems)))
                 .map(orderItemList -> {
                     purchaseContext.setOrderItemList(orderItemList);
                     return purchaseContext;
-                });
+                })
+                .onFailure(exception -> log.error("Unable to save orderItems={}", purchaseContext.getOrderItemList(), exception))
+                .onSuccess(result -> log.debug("Successfully saved orderItems={}", purchaseContext.getOrderItemList()));
     }
 
     private OrderItem buildOrderItem(PurchaseContext purchaseContext, BookOrderItem item) {
@@ -136,7 +136,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .andThen(book -> isEligibleForDiscount(purchaseContext, book, item))
                 .flatMap(book -> buildOrderItem(purchaseContext, item, book))
                 .andThen(el -> setBooksToUpdate(purchaseContext, el))
-                .getOrElseThrow(exception -> new RuntimeException(exception));
+                .get();
     }
 
     private static Try<Book> isEligibleBookToPurchase(Book book, BookOrderItem item) {
@@ -209,6 +209,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                     .orElse(null);
 
             if (bookToDiscount == null) {
+                //no more eligible books for loyalty discount
                 break;
             }
 
@@ -233,7 +234,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private Try<OrderItem> buildOrderItem(PurchaseContext purchaseContext, BookOrderItem item, Book book) {
         Order order = purchaseContext.getOrder();
         return Try.of(() -> {
-                    BigDecimal bookPrice = discountCalculator.applyDiscount(purchaseContext, book, item);
+                    BigDecimal bookPrice = discountCalculator.applyDiscount(book, item);
 
                     OrderItem orderItem = new OrderItem();
                     orderItem.setOrder(order);

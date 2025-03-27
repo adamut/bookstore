@@ -4,6 +4,8 @@ import com.bookstore.assignment.models.Customer;
 import com.bookstore.assignment.request.CustomerRequest;
 import com.bookstore.assignment.response.CustomerResponse;
 
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
+
 public class CustomerConverter {
 
     public static CustomerResponse entityToResponse(Customer customer) {
@@ -16,9 +18,10 @@ public class CustomerConverter {
 
     public static Customer requestToEntity(CustomerRequest customerRequest){
         Customer customer = new Customer();
-        customer.setId(customerRequest.getId());
-        customer.setName(customerRequest.getName());
-        customer.setLoyaltyPoints(customerRequest.getLoyaltyPoints());
+
+        doIfNotNull(customerRequest.getId(), customer::setId);
+        doIfNotNull(customerRequest.getName(), customer::setName);
+        doIfNotNull(customerRequest.getLoyaltyPoints(), customer::setLoyaltyPoints);
 
         return customer;
     }

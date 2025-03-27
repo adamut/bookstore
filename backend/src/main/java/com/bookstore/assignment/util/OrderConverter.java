@@ -6,38 +6,36 @@ import com.bookstore.assignment.request.OrderItemRequest;
 import com.bookstore.assignment.request.OrderRequest;
 import com.bookstore.assignment.response.OrderResponse;
 
-import java.util.List;
+
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
 
 public class OrderConverter {
 
-    public static OrderResponse entityToResponse(Order order) {
-        return OrderResponse.builder()
-                .id(order.getId())
-                .customer(CustomerConverter.entityToResponse(order.getCustomer()))
-                .totalPrice(order.getTotalPrice())
-                .orderDate(order.getOrderDate())
-                //todo add here
-//                .items()
-                .build();
+    private OrderConverter() {
     }
 
-    public static Order requestToEntity(OrderRequest customerRequest) {
+    public static OrderResponse entityToResponse(Order order) {
+        OrderResponse.OrderResponseBuilder orderResponseBuilder = OrderResponse.builder()
+                .id(order.getId())
+                .totalPrice(order.getTotalPrice())
+                .orderDate(order.getOrderDate());
+
+        doIfNotNull(order.getCustomer(), customer -> orderResponseBuilder.customer(CustomerConverter.entityToResponse(customer)));
+        doIfNotNull(order.getItems(), items -> orderResponseBuilder.items(OrderItemConverter.entityToResponseList(items)));
+
+        return orderResponseBuilder.build();
+    }
+
+    public static Order requestToEntity(OrderRequest orderRequest) {
         Order order = new Order();
-        order.setId(customerRequest.getId());
 
-        order.setCustomer(CustomerConverter.requestToEntity(customerRequest.getCustomer()));
-        List<OrderItem> orderItemList = getOrderItems(customerRequest.getItems());
-
-        order.setItems(orderItemList);
-        order.setTotalPrice(customerRequest.getTotalPrice());
-        order.setOrderDate(customerRequest.getOrderDate());
+        doIfNotNull(orderRequest.getId(), order::setId);
+        doIfNotNull(orderRequest.getCustomer(), customerRequest -> order.setCustomer(CustomerConverter.requestToEntity(orderRequest.getCustomer())));
+        doIfNotNull(orderRequest.getItems(), orderItemRequests -> order.setItems(OrderItemConverter.requestToEntityList(orderItemRequests)));
+        doIfNotNull(orderRequest.getTotalPrice(), order::setTotalPrice);
+        doIfNotNull(orderRequest.getOrderDate(), order::setOrderDate);
 
         return order;
     }
 
-    private static List<OrderItem> getOrderItems(List<OrderItemRequest> orderItemRequests) {
-        return orderItemRequests.stream()
-                .map(OrderItemConverter::requestToEntity)
-                .toList();
-    }
 }

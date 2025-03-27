@@ -8,27 +8,52 @@ import java.util.List;
 
 public class OrderItemConverter {
 
+    private OrderItemConverter() {
+    }
 
     public static OrderItemResponse entityToResponse(OrderItem orderItem) {
-        return OrderItemResponse.builder()
-//                    .id(orderItem.getId())
-//                    .loyaltyPoints(orderItem.getLoyaltyPoints())
-//                    .name(orderItem.getName())
-                .build();
+        OrderItemResponse.OrderItemResponseBuilder orderItemResponseBuilder = OrderItemResponse.builder()
+                .id(orderItem.getId())
+                .quantity(orderItem.getQuantity())
+                .price(orderItem.getPrice());
+
+        if (orderItem.getOrder() != null) {
+            orderItemResponseBuilder.order(OrderConverter.entityToResponse(orderItem.getOrder()));
+        }
+
+        if (orderItem.getBook() != null) {
+            orderItemResponseBuilder.book(BookConverter.entityToResponse(orderItem.getBook()));
+        }
+        return orderItemResponseBuilder.build();
     }
 
     public static OrderItem requestToEntity(OrderItemRequest orderItemRequest) {
         OrderItem orderItem = new OrderItem();
-//            orderItem.setId(orderItemRequest.getId());
-//            orderItem.setName(orderItemRequest.getName());
-//            orderItem.setLoyaltyPoints(orderItemRequest.getLoyaltyPoints());
+
+        orderItem.setId(orderItemRequest.getId());
+
+        if (orderItemRequest.getOrder() != null) {
+            orderItem.setOrder(OrderConverter.requestToEntity(orderItemRequest.getOrder()));
+        }
+
+        if (orderItemRequest.getBook() != null) {
+            orderItem.setBook(BookConverter.requestToEntity(orderItemRequest.getBook()));
+        }
+        orderItem.setQuantity(orderItem.getQuantity());
+        orderItem.setPrice(orderItem.getPrice());
 
         return orderItem;
     }
 
-    public static List<OrderItem> requestToEntityList(List<OrderItemRequest> orderItemRequestList){
+    public static List<OrderItem> requestToEntityList(List<OrderItemRequest> orderItemRequestList) {
         return orderItemRequestList.stream()
                 .map(OrderItemConverter::requestToEntity)
+                .toList();
+    }
+
+    public static List<OrderItemResponse> entityToResponseList(List<OrderItem> orderItemList) {
+        return orderItemList.stream()
+                .map(OrderItemConverter::entityToResponse)
                 .toList();
     }
 }

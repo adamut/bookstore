@@ -4,7 +4,13 @@ import com.bookstore.assignment.models.Book;
 import com.bookstore.assignment.request.BookRequest;
 import com.bookstore.assignment.response.BookResponse;
 
+
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
+
 public class BookConverter {
+
+    private BookConverter() {
+    }
 
     public static BookResponse entityToResponse(Book book) {
         return BookResponse.builder()
@@ -19,16 +25,17 @@ public class BookConverter {
                 .build();
     }
 
-    public static Book requestToEntity(BookRequest bookRequest){
+    public static Book requestToEntity(BookRequest bookRequest) {
         Book book = new Book();
-        book.setId(bookRequest.getId());
-        book.setTitle(bookRequest.getTitle());
-        book.setDescription(bookRequest.getDescription());
-        book.setPrice(bookRequest.getPrice());
-        book.setType(bookRequest.getType());
-        book.setStock(bookRequest.getStock());
-        book.setAddedAt(bookRequest.getAddedAt());
-        book.setUpdatedAt(bookRequest.getUpdatedAt());
+
+        doIfNotNull(bookRequest.getId(), book::setId);
+        doIfNotNull(bookRequest.getTitle(), book::setTitle);
+        doIfNotNull(bookRequest.getDescription(), book::setDescription);
+        doIfNotNull(bookRequest.getPrice(), book::setPrice);
+        doIfNotNull(bookRequest.getType(), book::setType);
+        doIfNotNull(bookRequest.getStock(), book::setStock);
+        doIfNotNull(bookRequest.getAddedAt(), book::setAddedAt);
+        doIfNotNull(bookRequest.getUpdatedAt(), book::setUpdatedAt);
 
         return book;
     }
