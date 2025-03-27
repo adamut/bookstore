@@ -3,7 +3,6 @@ package com.bookstore.assignment.util;
 import com.bookstore.assignment.config.DiscountConfig;
 import com.bookstore.assignment.model.BookType;
 import com.bookstore.assignment.models.Book;
-import com.bookstore.assignment.models.PurchaseContext;
 import com.bookstore.assignment.request.BookOrderItem;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,7 @@ public class DiscountCalculator {
         this.discountConfig = discountConfig;
     }
 
-    public BigDecimal applyDiscount(PurchaseContext purchaseContext, Book book, BookOrderItem item) {
+    public BigDecimal applyDiscount(Book book, BookOrderItem item) {
         BigDecimal finalPrice = book.getPrice();
 
         if (book.getType() == BookType.NEW_RELEASE) {

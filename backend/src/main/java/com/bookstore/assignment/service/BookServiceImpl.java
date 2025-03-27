@@ -31,6 +31,10 @@ public class BookServiceImpl implements BookService {
     @Override
     public Try<BookResponse> createBook(BookRequest bookRequest) {
         return Try.of(() -> BookConverter.requestToEntity(bookRequest))
+                .map(book -> {
+                    book.setUpdatedAt(Instant.now());
+                    return book;
+                })
                 .map(bookRepository::save)
                 .map(BookConverter::entityToResponse)
                 .onSuccess(result -> log.debug("Successfully stored book={}", result))

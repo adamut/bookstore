@@ -78,7 +78,7 @@ class PurchaseServiceImplTest {
         when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(discountCalculator.applyDiscount(any(), any(), any())).thenReturn(BigDecimal.valueOf(50));
+        when(discountCalculator.applyDiscount(any(), any())).thenReturn(BigDecimal.valueOf(50));
         when(loyaltyPointsConfig.getPointsThreshold()).thenReturn(10);
 
         // Act
@@ -146,7 +146,7 @@ class PurchaseServiceImplTest {
         when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(discountCalculator.applyDiscount(any(), any(), any())).thenReturn(BigDecimal.valueOf(50));
+        when(discountCalculator.applyDiscount(any(), any())).thenReturn(BigDecimal.valueOf(50));
         when(loyaltyPointsConfig.getPointsThreshold()).thenReturn(10);
 
         // Act
