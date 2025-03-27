@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -132,7 +133,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("Book not found")))
                 .flatMap(book -> isEligibleBookToPurchase(book, item))
-                .andThen(book -> isEligibleForDiscount(purchaseContext, book))
+                .andThen(book -> isEligibleForDiscount(purchaseContext, book, item))
                 .flatMap(book -> buildOrderItem(purchaseContext, item, book))
                 .andThen(el -> setBooksToUpdate(purchaseContext, el))
                 .getOrElseThrow(exception -> new RuntimeException(exception));
@@ -150,9 +151,9 @@ public class PurchaseServiceImpl implements PurchaseService {
         context.getBooksToUpdate().add(book);
     }
 
-    private void isEligibleForDiscount(PurchaseContext purchaseContext, Book book) {
+    private void isEligibleForDiscount(PurchaseContext purchaseContext, Book book, BookOrderItem item) {
         if (book.getType() == BookType.REGULAR || book.getType() == BookType.OLD_EDITION) {
-            purchaseContext.getEligibleForDiscount().add(book);
+            purchaseContext.getEligibleForDiscount().put(book, item.getQuantity());
         }
     }
 
@@ -199,13 +200,27 @@ public class PurchaseServiceImpl implements PurchaseService {
         Customer customer = context.getCustomer();
 
         int existingLoyaltyPoints = customer.getLoyaltyPoints();
+        Map<Book, Integer> eligibleForDiscount = context.getEligibleForDiscount();
 
-        while (existingLoyaltyPoints >= loyaltyPointsConfig.getPointsThreshold() && !context.getEligibleForDiscount().isEmpty()) {
-            Book book = context.getEligibleForDiscount().stream()
-                    .min(Comparator.comparing(Book::getPrice))
+        while (existingLoyaltyPoints >= loyaltyPointsConfig.getPointsThreshold() && !eligibleForDiscount.isEmpty()) {
+            Book bookToDiscount = eligibleForDiscount.entrySet().stream()
+                    .min(Comparator.comparing(entry -> entry.getKey().getPrice()))
+                    .map(Map.Entry::getKey)
                     .orElse(null);
 
-            totalPrice = totalPrice.subtract(book.getPrice());
+            if (bookToDiscount == null) {
+                break;
+            }
+
+            int remainingBookQuantity = eligibleForDiscount.get(bookToDiscount);
+
+            if (remainingBookQuantity > 1) {
+                eligibleForDiscount.put(bookToDiscount, remainingBookQuantity - 1);
+            } else {
+                eligibleForDiscount.remove(bookToDiscount);
+            }
+
+            totalPrice = totalPrice.subtract(bookToDiscount.getPrice());
 
             existingLoyaltyPoints -= loyaltyPointsConfig.getPointsThreshold();
             customer.setLoyaltyPoints(existingLoyaltyPoints);

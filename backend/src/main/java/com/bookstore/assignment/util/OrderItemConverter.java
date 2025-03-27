@@ -6,7 +6,7 @@ import com.bookstore.assignment.response.OrderItemResponse;
 
 import java.util.List;
 
-public class OrderItemsConverter {
+public class OrderItemConverter {
 
 
     public static OrderItemResponse entityToResponse(OrderItem orderItem) {
@@ -28,7 +28,7 @@ public class OrderItemsConverter {
 
     public static List<OrderItem> requestToEntityList(List<OrderItemRequest> orderItemRequestList){
         return orderItemRequestList.stream()
-                .map(OrderItemsConverter::requestToEntity)
+                .map(OrderItemConverter::requestToEntity)
                 .toList();
     }
 }

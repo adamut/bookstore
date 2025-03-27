@@ -1,10 +1,16 @@
 package com.bookstore.assignment.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
-
 public class OrderItemRequest {
+
+    private Long id;
+    private OrderRequest order;
+    private BookRequest book;
+    private int quantity;
+    private BigDecimal price;
+
 }
