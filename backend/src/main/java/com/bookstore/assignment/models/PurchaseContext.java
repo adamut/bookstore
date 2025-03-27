@@ -6,7 +6,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder()
@@ -25,7 +27,7 @@ public class PurchaseContext {
     private BigDecimal totalPrice;
 
     @Builder.Default
-    private List<Book> eligibleForDiscount = new ArrayList<>();
+    private Map<Book, Integer> eligibleForDiscount = new HashMap<>();
 
     @Builder.Default
     private List<Book> booksToUpdate = new ArrayList<>();

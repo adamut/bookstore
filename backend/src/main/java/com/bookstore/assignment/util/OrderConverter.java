@@ -37,7 +37,7 @@ public class OrderConverter {
 
     private static List<OrderItem> getOrderItems(List<OrderItemRequest> orderItemRequests) {
         return orderItemRequests.stream()
-                .map(OrderItemsConverter::requestToEntity)
+                .map(OrderItemConverter::requestToEntity)
                 .toList();
     }
 }

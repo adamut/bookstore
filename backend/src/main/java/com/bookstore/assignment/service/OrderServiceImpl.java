@@ -7,7 +7,7 @@ import com.bookstore.assignment.request.OrderRequest;
 import com.bookstore.assignment.response.OrderResponse;
 import com.bookstore.assignment.util.CustomerConverter;
 import com.bookstore.assignment.util.OrderConverter;
-import com.bookstore.assignment.util.OrderItemsConverter;
+import com.bookstore.assignment.util.OrderItemConverter;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setCustomer(CustomerConverter.requestToEntity(updatedOrder.getCustomer()));
         existingOrder.setTotalPrice(updatedOrder.getTotalPrice());
         existingOrder.setOrderDate(updatedOrder.getOrderDate());
-        existingOrder.setItems(OrderItemsConverter.requestToEntityList(updatedOrder.getItems()));
+        existingOrder.setItems(OrderItemConverter.requestToEntityList(updatedOrder.getItems()));
 
         return orderRepository.save(existingOrder);
     }
