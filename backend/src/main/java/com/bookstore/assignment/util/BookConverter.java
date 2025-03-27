@@ -12,6 +12,7 @@ public class BookConverter {
     private BookConverter() {
     }
 
+
     public static BookResponse entityToResponse(Book book) {
         return BookResponse.builder()
                 .id(book.getId())
