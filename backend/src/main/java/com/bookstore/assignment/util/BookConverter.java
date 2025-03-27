@@ -12,6 +12,7 @@ public class BookConverter {
     private BookConverter() {
     }
 
+
     public static BookResponse entityToResponse(Book book) {
         return BookResponse.builder()
                 .id(book.getId())
@@ -24,6 +25,7 @@ public class BookConverter {
                 .updatedAt(book.getUpdatedAt())
                 .build();
     }
+
 
     public static Book requestToEntity(BookRequest bookRequest) {
         Book book = new Book();
