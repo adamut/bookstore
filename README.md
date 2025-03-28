@@ -10,7 +10,7 @@ Make sure you have the following installed:
 - [Docker](https://www.docker.com/get-started)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 - Java 21 or later
-- (Optional) [Maven](https://maven.apache.org/) (if you want to build manually)
+- [Maven](https://maven.apache.org/) (if you want to build manually)
 
 ---
 
@@ -91,22 +91,10 @@ sudo kill -9 <PID>  # Kill the process
 ```
 Then restart the service.
 
-### 3 **View Logs**
-Check the logs of the application or database using:
-```sh
-docker logs assignment-app -f
-```
-```sh
-docker logs assignment-db -f
-```
 
 ---
 
 ##  API Endpoints
-Once the service is running, access it at:
-```
-http://localhost:8080
-```
 
 To test the API, use:
 ```sh
@@ -134,9 +122,45 @@ Ensure the service is running before testing.
 
 ---
 
-##  Notes
-- The application uses PostgreSQL 15.
-- Modify `application.properties` for custom configurations.
+## Key Architectural Decisions
+### 1. Relational Database (RDBMS) over NoSQL
+We chose PostgreSQL instead of a NoSQL database like MongoDB.
+
+- Reasons:
+
+  - The application involves structured data with relationships (Orders, Customers, Books, etc.).
+  - ACID compliance ensures data consistency and integrity.
+  - Easier to manage transactions and complex queries.
+
+### 2 Dependency Injection for Decoupling
+- Used Spring’s Dependency Injection (DI) to keep components loosely coupled.
+
+  - This makes the application: 
+    - Easier to test (mocking dependencies in unit tests).
+    - More maintainable (business logic is separate from implementations).
+
+### 3 Vavr for Error Handling & Code Readability
+- We integrated Vavr to enhance error handling and improve functional programming aspects:
+    - Functional Style: More expressive and less boilerplate.
+    - Try Monad: Instead of using traditional try-catch, we handle failures explicitly.
+    - Improved Readability: Avoids null checks, making the code more declarative.
+
+--- 
+
+##  What We Focused On
+
+-  Database Reliability – PostgreSQL for strong consistency and ACID compliance.
+-  Maintainability – Dependency Injection for modular components.
+-  Functional Programming – Vavr for better error handling and expressive code.
+-  Environment Configuration – Used environment variables for flexibility.
 
 ---
 
+## What We Didn't Focus On
+-  Containerized Logging – No centralized logging setup yet (e.g., ELK stack).
+-  Production-Grade Security – Credentials are stored in plain text for simplicity.
+-  Caching some of the repositories such as customer in order to improve performance
+-  No integration or functional tests were added to the project. In addition, not all classes were unit tested.
+-  Distributed system architecture for deleting books using a proper scheduler. Current solution focuses on deleting books per instance.
+-  Event-Driven Architecture – No event publishing when book stock is empty (e.g., sending alerts for restocking).
+- Service Monitoring – We haven't integrated metrics collection yet, but tools like Micrometer could be added in the future for tracking application performance and health.
