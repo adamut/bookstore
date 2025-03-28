@@ -11,7 +11,6 @@ import java.util.function.Function;
 @Component
 public class PageConverter<T, V> {
 
-
     public PageResponse<V> toPageResponse(Page<T> page, Function<T, V> converterFunction) {
         List<V> convertedList = page.stream()
                 .map(converterFunction)

@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
+
 @Service
 @Slf4j
 public class BookServiceImpl implements BookService {
@@ -73,11 +75,11 @@ public class BookServiceImpl implements BookService {
     }
 
     private Book updateBook(Book existingBook, BookRequest updatedBook) {
-        existingBook.setTitle(updatedBook.getTitle());
-        existingBook.setDescription(updatedBook.getDescription());
-        existingBook.setPrice(updatedBook.getPrice());
-        existingBook.setType(updatedBook.getType());
-        existingBook.setStock(updatedBook.getStock());
+        doIfNotNull(updatedBook.getTitle(), existingBook::setTitle);
+        doIfNotNull(updatedBook.getDescription(), existingBook::setDescription);
+        doIfNotNull(updatedBook.getPrice(), existingBook::setPrice);
+        doIfNotNull(updatedBook.getType(), existingBook::setType);
+        doIfNotNull(updatedBook.getStock(), existingBook::setStock);
         existingBook.setUpdatedAt(Instant.now());
 
         return bookRepository.save(existingBook);

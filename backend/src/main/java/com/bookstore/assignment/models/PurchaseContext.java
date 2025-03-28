@@ -34,4 +34,11 @@ public class PurchaseContext {
 
     @Builder.Default
     private List<Book> orderBooks = new ArrayList<>();
+
+    public static PurchaseContext of(PurchaseRequest request, Customer customer) {
+        return PurchaseContext.builder()
+                .request(request)
+                .customer(customer)
+                .build();
+    }
 }

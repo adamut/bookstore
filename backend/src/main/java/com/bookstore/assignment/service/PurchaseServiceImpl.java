@@ -1,7 +1,6 @@
 package com.bookstore.assignment.service;
 
 import com.bookstore.assignment.config.LoyaltyPointsConfig;
-import com.bookstore.assignment.exception.BookNotFoundException;
 import com.bookstore.assignment.exception.CustomerNotFoundException;
 import com.bookstore.assignment.dao.BookRepository;
 import com.bookstore.assignment.dao.CustomerRepository;
@@ -17,6 +16,7 @@ import com.bookstore.assignment.models.OrderItem;
 import com.bookstore.assignment.request.BookOrderItem;
 import com.bookstore.assignment.request.PurchaseRequest;
 import com.bookstore.assignment.response.PurchaseResponse;
+import com.bookstore.assignment.util.BookUtil;
 import com.bookstore.assignment.util.DiscountCalculator;
 import io.vavr.control.Try;
 import jakarta.transaction.Transactional;
@@ -56,33 +56,29 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public Try<PurchaseResponse> purchaseBooks(PurchaseRequest request) {
         return Try.of(() -> getCustomer(request))
-                .flatMap(customer -> {
-                    PurchaseContext context = PurchaseContext.builder()
-                            .request(request)
-                            .customer(customer)
-                            .build();
-
-                    return processPurchase(context);
-                })
+                .map(customer -> PurchaseContext.of(request, customer))
+                .flatMap(this::processPurchase)
                 .onSuccess(result -> log.info("Successfully purchased order with result={}", result))
                 .onFailure(exception -> log.error("Failed to purchase order for request={}", request, exception));
     }
 
     private Customer getCustomer(PurchaseRequest request) {
         return customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found for customerId=" + request.getCustomerId()));
     }
 
     private Try<PurchaseResponse> processPurchase(PurchaseContext context) {
-        return saveInitialOrder(context)
-                .flatMap(this::getBooksForOrder)
+        return getBooksForOrder(context)
+                .flatMap(this::saveInitialOrder)
                 .flatMap(this::saveOrderItems)
                 .map(this::calculateTotalPrice)
                 .map(this::calculateEarnedLoyaltyPoints)
                 .flatMap(this::updateOrder)
                 .flatMap(this::updateCustomerLoyaltyPoints)
+                .flatMap(this::updateBooksStock)
                 .map(this::buildPurchaseResponse);
     }
+
 
     private Try<PurchaseContext> saveInitialOrder(PurchaseContext context) {
         Order newOrder = new Order();
@@ -94,25 +90,22 @@ public class PurchaseServiceImpl implements PurchaseService {
                     context.setOrder(order);
                     return context;
                 })
-                .onFailure(exception -> log.error("Failed to save initial order for order={}", newOrder, exception));
+                .onFailure(exception -> log.error("Failed to save initial order for order={}", newOrder, exception))
+                .onSuccess(result -> log.debug("Successfully saved initial order before adding items for result={}", result));
     }
 
     private Try<PurchaseContext> getBooksForOrder(PurchaseContext context) {
-        return Try.of(() -> context.getRequest().getBooks().stream()
-                        .map(this::getBookById)
-                        .toList())
-                .map(orderItemList -> {
-                    context.setOrderBooks(orderItemList);
+        var bookIds = context.getRequest().getBooks().stream()
+                .map(BookOrderItem::getBookId)
+                .toList();
+
+        return Try.of(() -> bookRepository.findAllById(bookIds))
+                .map(list -> {
+                    context.setOrderBooks(list);
                     return context;
-                });
+                })
+                .onFailure(exception -> log.error("Failed to retrieve books for book ids={}", bookIds, exception));
     }
-
-    private Book getBookById(BookOrderItem item) {
-        return Try.of(() -> bookRepository.findById(item.getBookId())
-                        .orElseThrow(() -> new BookNotFoundException("Book not found")))
-                .getOrElseThrow(exception -> new RuntimeException("Failed to retrieve book"));
-    }
-
 
     private Try<PurchaseContext> saveOrderItems(PurchaseContext purchaseContext) {
         return Try.of(() -> purchaseContext.getRequest().getBooks().stream()
@@ -145,16 +138,32 @@ public class PurchaseServiceImpl implements PurchaseService {
                 : Try.failure(new NotEnoughStockException("Not enough stock for book with id= " + book.getId()));
     }
 
-    private void setBooksToUpdate(PurchaseContext context, OrderItem orderItem) {
-        Book book = orderItem.getBook();
-        book.setStock(book.getStock() - orderItem.getQuantity());
-        context.getBooksToUpdate().add(book);
-    }
-
     private void isEligibleForDiscount(PurchaseContext purchaseContext, Book book, BookOrderItem item) {
         if (book.getType() == BookType.REGULAR || book.getType() == BookType.OLD_EDITION) {
             purchaseContext.getEligibleForDiscount().put(book, item.getQuantity());
         }
+    }
+
+    private Try<OrderItem> buildOrderItem(PurchaseContext purchaseContext, BookOrderItem item, Book book) {
+        Order order = purchaseContext.getOrder();
+        return Try.of(() -> {
+                    BigDecimal bookPrice = discountCalculator.applyDiscount(book, item.getQuantity());
+
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(order);
+                    orderItem.setBook(book);
+                    orderItem.setQuantity(item.getQuantity());
+                    orderItem.setPrice(bookPrice);
+
+                    return orderItem;
+                })
+                .onFailure(exception -> log.error("Failed to build orderItem for orderId={} and item={}", order.getId(), item, exception));
+    }
+
+    private void setBooksToUpdate(PurchaseContext context, OrderItem orderItem) {
+        Book book = orderItem.getBook();
+        book.setStock(book.getStock() - orderItem.getQuantity());
+        context.getBooksToUpdate().add(book);
     }
 
     private Try<PurchaseContext> updateCustomerLoyaltyPoints(PurchaseContext context) {
@@ -181,15 +190,6 @@ public class PurchaseServiceImpl implements PurchaseService {
                     return context;
                 })
                 .onFailure(exception -> log.error("Failed to update order for order={}", order, exception));
-    }
-
-    private PurchaseContext calculateEarnedLoyaltyPoints(PurchaseContext context) {
-        int earnedLoyaltyPoints = context.getOrderItemList().stream()
-                .mapToInt(OrderItem::getQuantity)
-                .sum();
-
-        context.setEarnedLoyaltyPoints(earnedLoyaltyPoints);
-        return context;
     }
 
     private PurchaseContext calculateTotalPrice(PurchaseContext context) {
@@ -220,8 +220,9 @@ public class PurchaseServiceImpl implements PurchaseService {
             } else {
                 eligibleForDiscount.remove(bookToDiscount);
             }
-
-            totalPrice = totalPrice.subtract(bookToDiscount.getPrice());
+            BookOrderItem orderItemToDiscount = BookUtil.findOrderItemByBookId(context.getRequest().getBooks(), bookToDiscount.getId());
+            BigDecimal deductedPrice = discountCalculator.applyDiscount(bookToDiscount, orderItemToDiscount.getQuantity());
+            totalPrice = totalPrice.subtract(deductedPrice);
 
             existingLoyaltyPoints -= loyaltyPointsConfig.getPointsThreshold();
             customer.setLoyaltyPoints(existingLoyaltyPoints);
@@ -231,20 +232,20 @@ public class PurchaseServiceImpl implements PurchaseService {
         return context;
     }
 
-    private Try<OrderItem> buildOrderItem(PurchaseContext purchaseContext, BookOrderItem item, Book book) {
-        Order order = purchaseContext.getOrder();
-        return Try.of(() -> {
-                    BigDecimal bookPrice = discountCalculator.applyDiscount(book, item);
+    private PurchaseContext calculateEarnedLoyaltyPoints(PurchaseContext context) {
+        int earnedLoyaltyPoints = context.getOrderItemList().stream()
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
 
-                    OrderItem orderItem = new OrderItem();
-                    orderItem.setOrder(order);
-                    orderItem.setBook(book);
-                    orderItem.setQuantity(item.getQuantity());
-                    orderItem.setPrice(bookPrice);
+        context.setEarnedLoyaltyPoints(earnedLoyaltyPoints);
+        return context;
+    }
 
-                    return orderItem;
-                })
-                .onFailure(exception -> log.error("Failed to build orderItem for orderId={} and item={}", order.getId(), item, exception));
+    private Try<PurchaseContext> updateBooksStock(PurchaseContext context) {
+        return Try.of(() -> bookRepository.saveAll(context.getBooksToUpdate()))
+                .map(result -> context)
+                .onSuccess(result -> log.debug("Successfully updated books stock after placing order"))
+                .onFailure(exception -> log.error("Failed to update stock on books after placing order"));
     }
 
     private PurchaseResponse buildPurchaseResponse(PurchaseContext context) {

@@ -1,8 +1,6 @@
 package com.bookstore.assignment.util;
 
 import com.bookstore.assignment.models.Order;
-import com.bookstore.assignment.models.OrderItem;
-import com.bookstore.assignment.request.OrderItemRequest;
 import com.bookstore.assignment.request.OrderRequest;
 import com.bookstore.assignment.response.OrderResponse;
 
@@ -37,5 +35,4 @@ public class OrderConverter {
 
         return order;
     }
-
 }

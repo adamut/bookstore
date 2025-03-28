@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
+
 @Service
 @Slf4j
 public class OrderItemServiceImpl implements OrderItemService {
@@ -67,8 +69,8 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     private OrderItem updateOrderItem(OrderItem existingOrderItem, OrderItemRequest updatedOrderItem) {
-        existingOrderItem.setQuantity(updatedOrderItem.getQuantity());
-        existingOrderItem.setPrice(updatedOrderItem.getPrice());
+        doIfNotNull(updatedOrderItem.getQuantity(), existingOrderItem::setQuantity);
+        doIfNotNull(updatedOrderItem.getPrice(), existingOrderItem::setPrice);
 
         return orderItemRepository.save(existingOrderItem);
     }

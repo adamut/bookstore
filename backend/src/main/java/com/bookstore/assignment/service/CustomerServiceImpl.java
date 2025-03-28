@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import static com.bookstore.assignment.util.ConverterUtil.doIfNotNull;
+
 @Service
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
@@ -67,8 +69,8 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Customer updateCustomer(Customer existingCustomer, CustomerRequest updatedCustomer) {
-        existingCustomer.setLoyaltyPoints(updatedCustomer.getLoyaltyPoints());
-        existingCustomer.setName(updatedCustomer.getName());
+        doIfNotNull(updatedCustomer.getLoyaltyPoints(), existingCustomer::setLoyaltyPoints);
+        doIfNotNull(updatedCustomer.getName(), existingCustomer::setName);
 
         return customerRepository.save(existingCustomer);
     }

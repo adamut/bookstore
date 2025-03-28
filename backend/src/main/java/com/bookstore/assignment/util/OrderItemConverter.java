@@ -17,9 +17,6 @@ public class OrderItemConverter {
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice());
 
-        if (orderItem.getOrder() != null) {
-            orderItemResponseBuilder.order(OrderConverter.entityToResponse(orderItem.getOrder()));
-        }
 
         if (orderItem.getBook() != null) {
             orderItemResponseBuilder.book(BookConverter.entityToResponse(orderItem.getBook()));
