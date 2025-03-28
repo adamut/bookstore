@@ -153,6 +153,7 @@ We chose PostgreSQL instead of a NoSQL database like MongoDB.
 -  Maintainability – Dependency Injection for modular components.
 -  Functional Programming – Vavr for better error handling and expressive code.
 -  Environment Configuration – Used environment variables for flexibility.
+-  Modular Architecture – We focused on structuring the application into modules to ensure better decoupling between business logic, database interactions, and other concerns.
 
 ---
 
