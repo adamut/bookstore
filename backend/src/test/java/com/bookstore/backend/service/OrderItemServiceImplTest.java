@@ -78,7 +78,6 @@ class OrderItemServiceImplTest {
 
         orderItemResponse = new OrderItemResponse();
         orderItemResponse.setId(1L);
-        orderItemResponse.setOrder(orderResponse);
         orderItemResponse.setBook(bookResponse);
         orderItemResponse.setQuantity(2);
         orderItemResponse.setPrice(BigDecimal.valueOf(40));
@@ -200,16 +199,6 @@ class OrderItemServiceImplTest {
         order.setId(10L);
         order.setTotalPrice(BigDecimal.valueOf(100));
         return order;
-    }
-
-    private static BookResponse getBookResponse() {
-        BookResponse bookResponse = new BookResponse();
-        bookResponse.setId(5L);
-        bookResponse.setTitle("Test Book");
-        bookResponse.setStock(50);
-        bookResponse.setPrice(BigDecimal.valueOf(20));
-        bookResponse.setType(BookType.REGULAR);
-        return bookResponse;
     }
 
     private static OrderRequest getOrderRequest() {
