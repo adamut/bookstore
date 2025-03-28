@@ -75,11 +75,12 @@ class PurchaseServiceImplTest {
     void purchaseBooks_SuccessfulPurchase() {
         // Arrange
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(testBook));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(discountCalculator.applyDiscount(any(), any())).thenReturn(BigDecimal.valueOf(50));
+        when(discountCalculator.applyDiscount(any(), anyInt())).thenReturn(BigDecimal.valueOf(50));
         when(loyaltyPointsConfig.getPointsThreshold()).thenReturn(10);
+        when(customerRepository.save(any())).thenReturn(testCustomer);
 
         // Act
         Try<PurchaseResponse> result = purchaseService.purchaseBooks(testRequest);
@@ -87,8 +88,8 @@ class PurchaseServiceImplTest {
         // Assert
         Assertions.assertTrue(result.isSuccess());
         PurchaseResponse purchaseResponse = result.get();
-        Assertions.assertEquals(Long.valueOf(1L), purchaseResponse.getOrderId());
-        verify(orderRepository, times(1)).save(any(Order.class));
+        Assertions.assertEquals(BigDecimal.valueOf(100), purchaseResponse.getTotalPrice());
+        verify(orderRepository, times(2)).save(any(Order.class));
         verify(orderItemRepository, times(1)).saveAll(anyList());
     }
 
@@ -110,7 +111,7 @@ class PurchaseServiceImplTest {
     void purchaseBooks_BookNotFound_ShouldFail() {
         // Arrange
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
-        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of());
 
         // Act
         Try<PurchaseResponse> result = purchaseService.purchaseBooks(testRequest);
@@ -118,7 +119,7 @@ class PurchaseServiceImplTest {
         // Assert
         Assertions.assertTrue(result.isFailure());
         assertInstanceOf(BookNotFoundException.class, result.getCause());
-        verify(orderRepository, never()).save(any());
+        verify(orderRepository, times(1)).save(any());
     }
 
     @Test
@@ -126,7 +127,7 @@ class PurchaseServiceImplTest {
         // Arrange
         testBook.setStock(1); // Less stock than requested
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(testBook));
 
         // Act
         Try<PurchaseResponse> result = purchaseService.purchaseBooks(testRequest);
@@ -143,10 +144,10 @@ class PurchaseServiceImplTest {
         testCustomer.setLoyaltyPoints(10);
         when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer));
         when(customerRepository.save(any())).thenReturn(testCustomer);
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
+        when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(testBook));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(discountCalculator.applyDiscount(any(), any())).thenReturn(BigDecimal.valueOf(50));
+        when(discountCalculator.applyDiscount(any(), anyInt())).thenReturn(BigDecimal.valueOf(50));
         when(loyaltyPointsConfig.getPointsThreshold()).thenReturn(10);
 
         // Act
@@ -154,7 +155,7 @@ class PurchaseServiceImplTest {
 
         // Assert
         Assertions.assertTrue(result.isSuccess());
-        Assertions.assertEquals(BigDecimal.valueOf(50.0), result.get().getTotalPrice()); // Since loyalty points cover one book
+        Assertions.assertEquals(BigDecimal.valueOf(50), result.get().getTotalPrice()); // Since loyalty points cover one book
         Assertions.assertEquals(2, result.get().getRemainingLoyaltyPoints());
     }
 

@@ -1,6 +1,7 @@
 package com.bookstore.assignment.service;
 
 import com.bookstore.assignment.config.LoyaltyPointsConfig;
+import com.bookstore.assignment.exception.BookNotFoundException;
 import com.bookstore.assignment.exception.CustomerNotFoundException;
 import com.bookstore.assignment.dao.BookRepository;
 import com.bookstore.assignment.dao.CustomerRepository;
@@ -124,7 +125,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return Try.of(() -> purchaseContext.getOrderBooks().stream()
                         .filter(book -> book.getId().equals(item.getBookId()))
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Book not found")))
+                        .orElseThrow(() -> new BookNotFoundException("Book not found")))
                 .flatMap(book -> isEligibleBookToPurchase(book, item))
                 .andThen(book -> isEligibleForDiscount(purchaseContext, book, item))
                 .flatMap(book -> buildOrderItem(purchaseContext, item, book))

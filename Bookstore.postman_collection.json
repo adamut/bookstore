@@ -1,0 +1,417 @@
+{
+	"info": {
+		"_postman_id": "240bfaa5-619d-46f1-930e-788e7065bcb1",
+		"name": "Bookstore",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4147631"
+	},
+	"item": [
+		{
+			"name": "public",
+			"item": [
+				{
+					"name": "Get customer loyalty points",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/customer/loyalty/2",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"customer",
+								"loyalty",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get customer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/customer/l2",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"customer",
+								"l2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get books",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/book/?page=0&size=100",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"book",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Purchase books",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": 1,\n  \"books\": [\n    { \"bookId\": 101, \"quantity\": 2 },\n    { \"bookId\": 102, \"quantity\": 1 }\n  ],\n  \"useLoyaltyPoints\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/bookstore/purchase",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"purchase"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get book by id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/book/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"book",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get order by id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/order/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"order",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get orders",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/order/",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"order",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "Create book",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"test\",\n    \"description\": \"test description\",\n    \"price\": 49.99,\n    \"type\": \"REGULAR\",\n    \"stock\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/book",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"book"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Delete book",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/book/36",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"book",
+								"36"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete customer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/customer/19",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"customer",
+								"19"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update book",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 35,\n    \"title\": \"test1\",\n    \"description\": \"test description\",\n    \"price\": 49.99,\n    \"type\": \"REGULAR\",\n    \"stock\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/book",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"book"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create customer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"randomName\",\n    \"loyaltyPoints\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/customer",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update customer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 19,\n    \"name\": \"randomName1\",\n    \"loyaltyPoints\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/bookstore/admin/customer",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"admin",
+								"customer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get customers",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/bookstore/book/?page=0&size=100",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"bookstore",
+								"book",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
